@@ -1,0 +1,28 @@
+[submodule "cbs"]
+	path = cbs
+	url = https://github.com/trenthuber/cbs.git
+	branch = main
+	update = merge
+[submodule "external/ninja"]
+	path = external/ninja
+	url = https://github.com/ninja-build/ninja.git
+[submodule "external/meson"]
+	path = external/meson
+	url = https://github.com/mesonbuild/meson.git
+[submodule "external/pkgconf"]
+	path = external/pkgconf
+	url = https://github.com/pkgconf/pkgconf.git
+[submodule "external/glib"]
+	path = external/glib
+	url = https://github.com/GNOME/glib.git
+[submodule "external/SDL"]
+	path = external/SDL
+	url = https://github.com/libsdl-org/SDL.git
+	branch = SDL2
+[submodule "external/SDL_image"]
+	path = external/SDL_image
+	url = https://github.com/libsdl-org/SDL_image.git
+	branch = SDL2
+[submodule "external/qemu"]
+	path = external/qemu
+	url = https://github.com/qemu/qemu.git
