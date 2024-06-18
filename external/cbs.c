@@ -140,35 +140,8 @@ static void build_qemu(void) {
 }
 
 void clean(void) {
-
-	// Clean the configs
-#define clean_configs(dir) \
-	do { \
-		cbs_cd("./"dir); \
-		cbs_run_status("make", "distclean"); \
-		cbs_cd(".."); \
-	} while(0)
-	clean_configs("SDL");
-	clean_configs("SDL_image");
-	clean_configs("qemu");
-
-	// Clean the local installs
-	cbs_run("rm", "-rf",
-	        "./ninja/build", "./ninja/build.ninja", "./ninja/ninja",
-
-	        "./pkgconf/bin", "./pkgconf/build", "./pkgconf/include",
-	        "./pkgconf/lib", "./pkgconf/share",
-
-	        "./glib/bin", "./glib/build", "./glib/include", "./glib/lib",
-	        "./glib/share",
-
-	        "./SDL/SDL2.spec", "./SDL/sdl2.pc", "./SDL/sdl2-config.cmake",
-	        "./SDL/sdl2-config-version.cmake", "./SDL/bin", "./SDL/lib",
-	        "./SDL/share",
-
-	        "./SDL_image/lib",
-
-	        "./qemu/bin", "./qemu/build", "./qemu/lib", "./qemu/share");
+	cbs_run("git", "submodule", "deinit", "-f", ".");
+	cbs_run("git", "submodule", "update", "--init", "--recursive", "--checkout");
 }
 
 int main(int argc, char **argv) {
