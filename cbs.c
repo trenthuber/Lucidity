@@ -43,21 +43,14 @@ void clean_all(void) {
 	clean_cbs();
 }
 
-void update_cbs(void) {
-	cbs_cd("./cbs");
-	cbs_run("git", "stash");
-	cbs_run("git", "pull", "origin", "main");
-	cbs_cd("..");
-}
-
 int main(int argc, char **argv) {
 	cbs_rebuild_self(argv);
 	cbs_shift_args(&argc, &argv);
 
 	const char *arg;
-	while ((arg = cbs_shift_args(&argc, &argv))) {
+	while ((arg = cbs_shift_args(&argc, &argv)))
 	top:
-		if (cbs_string_eq(arg, "build")) {
+		if (cbs_string_eq(arg, "build"))
 			if ((arg = cbs_shift_args(&argc, &argv)) == NULL) {
 				build_lucidity();
 				break;
@@ -68,8 +61,8 @@ int main(int argc, char **argv) {
 				build_lucidity();
 				goto top;
 			}
-		} else if (cbs_string_eq(arg, "run")) run();
-		else if (cbs_string_eq(arg, "clean")) {
+		else if (cbs_string_eq(arg, "run")) run();
+		else if (cbs_string_eq(arg, "clean"))
 			if ((arg = cbs_shift_args(&argc, &argv)) == NULL) {
 				clean_lucidity();
 				break;
@@ -81,9 +74,7 @@ int main(int argc, char **argv) {
 				clean_lucidity();
 				goto top;
 			}
-		} else if (cbs_string_eq(arg, "git")) update_cbs();
 		else cbs_error(cbs_string_build("Unknown subcommand: ", arg));
-	}
 
 	return 0;
 }
