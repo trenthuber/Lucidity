@@ -4,15 +4,7 @@
 
 #define CC "cc"
 
-void update_cbs(void) {
-	cbs_cd("./cbs");
-	cbs_run("git", "stash");
-	cbs_cd("..");
-	cbs_run("git", "submodule", "update", "--remote");
-}
-
 void build_external(void) {
-	cbs_run("git", "submodule", "update", "--init", "--recursive");
 	cbs_subbuild("./external", "build");
 }
 
@@ -21,7 +13,6 @@ void build_lucidity(void) {
 }
 
 void build_all(void) {
-	update_cbs();
 	build_external();
 	build_lucidity();
 }
@@ -52,6 +43,13 @@ void clean_all(void) {
 	clean_cbs();
 }
 
+void update_cbs(void) {
+	cbs_cd("./cbs");
+	cbs_run("git", "stash");
+	cbs_run("git", "pull", "origin", "main");
+	cbs_cd("..");
+}
+
 int main(int argc, char **argv) {
 	cbs_rebuild_self(argv);
 	cbs_shift_args(&argc, &argv);
@@ -70,8 +68,7 @@ int main(int argc, char **argv) {
 				build_lucidity();
 				goto top;
 			}
-		}
-		else if (cbs_string_eq(arg, "run")) run();
+		} else if (cbs_string_eq(arg, "run")) run();
 		else if (cbs_string_eq(arg, "clean")) {
 			if ((arg = cbs_shift_args(&argc, &argv)) == NULL) {
 				clean_lucidity();
@@ -84,8 +81,7 @@ int main(int argc, char **argv) {
 				clean_lucidity();
 				goto top;
 			}
-		}
-		else if (cbs_string_eq(arg, "cbs")) update_cbs();
+		} else if (cbs_string_eq(arg, "git")) update_cbs();
 		else cbs_error(cbs_string_build("Unknown subcommand: ", arg));
 	}
 

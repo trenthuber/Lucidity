@@ -6,15 +6,19 @@
 [submodule "external/ninja"]
 	path = external/ninja
 	url = https://github.com/ninja-build/ninja.git
+	branch = master
 [submodule "external/meson"]
 	path = external/meson
 	url = https://github.com/mesonbuild/meson.git
+	branch = master
 [submodule "external/pkgconf"]
 	path = external/pkgconf
 	url = https://github.com/pkgconf/pkgconf.git
+	branch = master
 [submodule "external/glib"]
 	path = external/glib
 	url = https://github.com/GNOME/glib.git
+	branch = main
 [submodule "external/SDL"]
 	path = external/SDL
 	url = https://github.com/libsdl-org/SDL.git
@@ -26,3 +30,4 @@
 [submodule "external/qemu"]
 	path = external/qemu
 	url = https://github.com/qemu/qemu.git
+	branch = master
