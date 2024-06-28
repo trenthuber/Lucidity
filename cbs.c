@@ -4,27 +4,16 @@
 
 #define CC "cc"
 
-void build_external(void) {
-	cbs_subbuild("./external", "build");
-}
+static const char *program;
 
 void build_lucidity(void) {
 	cbs_log("Todo! Will build lucidity eventually");
 }
 
-void build_all(void) {
-	build_external();
-	build_lucidity();
-}
-
-void run(void) {
+void run_lucidity(void) {
 	if (!cbs_files_exist("./external/qemu/bin/qemu-system-x86_64"))
-		cbs_error("QEMU wasn't found. Build with \"./lucidity build deps\"");
+		cbs_error("QEMU wasn't found. Make sure it's built by running \"", program, " external build\"");
 	cbs_run("./external/qemu/bin/qemu-system-x86_64");
-}
-
-void clean_external(void) {
-	cbs_subbuild("./external", "clean");
 }
 
 void clean_lucidity(void) {
@@ -34,46 +23,44 @@ void clean_lucidity(void) {
 void clean_cbs(void) {
 	cbs_run("rm", "-f", "./external/cbs");
 
-	cbs_run("rm", "-f", "./lucidity");
-}
-
-void clean_all(void) {
-	clean_external();
-	clean_lucidity();
-	clean_cbs();
+	cbs_run("rm", "-f", program);
 }
 
 int main(int argc, char **argv) {
 	cbs_rebuild_self(argv);
-	cbs_shift_args(&argc, &argv);
+	program = cbs_shift_args(&argc, &argv);
 
 	const char *arg;
 	while ((arg = cbs_shift_args(&argc, &argv)))
-	top:
-		if (cbs_string_eq(arg, "build"))
-			if ((arg = cbs_shift_args(&argc, &argv)) == NULL) {
-				build_lucidity();
-				break;
-			} else if (cbs_string_eq(arg, "all")) build_all();
-			else if (cbs_string_eq(arg, "deps")) build_external();
-			else if (cbs_string_eq(arg, "os")) build_lucidity();
-			else {
-				build_lucidity();
-				goto top;
-			}
-		else if (cbs_string_eq(arg, "run")) run();
-		else if (cbs_string_eq(arg, "clean"))
-			if ((arg = cbs_shift_args(&argc, &argv)) == NULL) {
-				clean_lucidity();
-				break;
-			} else if (cbs_string_eq(arg, "all")) clean_all();
-			else if (cbs_string_eq(arg, "deps")) clean_external();
-			else if (cbs_string_eq(arg, "os")) clean_lucidity();
-			else if (cbs_string_eq(arg, "cbs")) clean_cbs();
-			else {
-				clean_lucidity();
-				goto top;
-			}
+		if (cbs_string_eq(arg, "build")) {
+			cbs_subbuild("external", "build");
+			build_lucidity();
+		} else if (cbs_string_eq(arg, "clean")) {
+			cbs_subbuild("external", "clean");
+			clean_lucidity();
+			clean_cbs();
+		} else if (cbs_string_eq(arg, "lucidity"))
+			if ((arg = cbs_shift_args(&argc, &argv)) == NULL
+			    || cbs_string_eq(arg, "build")) build_lucidity();
+			else if (cbs_string_eq(arg, "run")) run_lucidity();
+			else if (cbs_string_eq(arg, "clean")) clean_lucidity();
+			else cbs_error(cbs_string_build("Invalid subcommand for \"", program,
+			                                "lucidity\""));
+		else if (cbs_string_eq(arg, "external"))
+			cbs_subbuild("external",
+			             (arg = cbs_shift_args(&argc, &argv)) ? arg : "build");
+		else if (cbs_string_eq(arg, "cbs"))
+			if ((arg = cbs_shift_args(&argc, &argv)) == NULL)
+				cbs_error(cbs_string_build("Must provide a subcommand for \"", program,
+				                           "cbs\""));
+			else if (cbs_string_eq(arg, "clean")) clean_cbs();
+			else if (cbs_string_eq(arg, "reinit")) {
+				cbs_cd("./cbs");
+				cbs_run("git", "stash");
+				cbs_run("git", "pull", "origin", "main");
+				cbs_cd("..");
+			} else cbs_error(cbs_string_build("Invalid subcommand for \"", program,
+			                                  "cbs\""));
 		else cbs_error(cbs_string_build("Unknown subcommand: ", arg));
 
 	return 0;

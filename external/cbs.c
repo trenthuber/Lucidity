@@ -4,6 +4,12 @@
 
 #define NUM_MAKE_THREADS "6"
 
+#define NASM_VERSION "2.16.03"
+#define NASM_PREFIX "nasm-" NASM_VERSION
+#define NASM_TAR_GZ NASM_PREFIX ".tar.gz"
+#define NASM_URL "https://www.nasm.us/pub/nasm/releasebuilds/" NASM_VERSION \
+                 "/" NASM_TAR_GZ
+
 static char *external_dir;
 
 static void init_env_vars(void) {
@@ -70,18 +76,14 @@ static void build_sdl(void) {
 	cbs_log("Building SDL...");
 
 	cbs_cd("./SDL");
-	int status;
-	switch ((status = cbs_run_status("make", "-q", "-t"))) {
-	case 0:
-		cbs_cd("..");
-		return;
-	case 1: break;
+	switch (cbs_run_status("make", "-q", "-t")) {
 	case 2:
-	default:
 		cbs_run("./configure", cbs_string_build("--prefix=", external_dir, "/SDL"));
+	case 1:
+		cbs_run("make", "-j" NUM_MAKE_THREADS);
+		cbs_run("make", "install");
+	case 0:;
 	}
-	cbs_run("make", "-j"NUM_MAKE_THREADS);
-	cbs_run("make", "install");
 	cbs_cd("..");
 }
 
@@ -92,21 +94,19 @@ static void build_sdl_image(void) {
 
 	cbs_cd("./SDL_image");
 	switch (cbs_run_status("make", "-q", "-t", "--dry-run", "--quiet")) {
-	case 0:
-		cbs_cd("..");
-		return;
-	case 1: break;
 	case 2:
-	default: cbs_run("./configure",
-		             cbs_string_build("--prefix=", external_dir, "/SDL_image"),
-		             cbs_string_build("--with-sdl-prefix=", external_dir, "/SDL"));
+		cbs_run("./configure",
+		        cbs_string_build("--prefix=", external_dir, "/SDL_image"),
+		        cbs_string_build("--with-sdl-prefix=", external_dir, "/SDL"));
+	case 1: 
+
+		// Hack to get make to not use automake
+		cbs_run("touch", "Makefile.in");
+
+		cbs_run("make");
+		cbs_run("make", "install");
+	case 0:;
 	}
-
-	// Hack to get make to not use automake
-	cbs_run("touch", "Makefile.in");
-
-	cbs_run("make");
-	cbs_run("make", "install");
 	cbs_cd("..");
 }
 
@@ -126,22 +126,48 @@ static void build_qemu(void) {
 	cbs_run("mkdir", "-p", "./build");
 
 	cbs_cd("./build");
-	if (cbs_run_status("make", "-q", "-t", "--dry-run", "--quiet") == 2)
+	switch (cbs_run_status("make", "-q", "-t", "--dry-run", "--quiet")) {
+	case 2:
 		cbs_run("../configure", cbs_string_build("--prefix=", external_dir, "/qemu"),
 		        "--audio-drv-list=sdl", "--disable-cocoa", "--enable-sdl",
 		        "--enable-sdl-image", "--target-list=x86_64-softmmu");
-	cbs_run("env", cbs_string_build("PYTHONPATH=", external_dir,
-	                                "/glib/build/gio/gdbus-2.0/codegen"),
-	        "make", "-j"NUM_MAKE_THREADS);
-	cbs_run("make", "install");
+	case 1:
+		cbs_run("env", cbs_string_build("PYTHONPATH=", external_dir,
+		                                "/glib/build/gio/gdbus-2.0/codegen"),
+		        "make", "-j" NUM_MAKE_THREADS);
+		cbs_run("make", "install");
+	case 0:;
+	}
 	cbs_cd("..");
 
 	cbs_cd("..");
 }
 
+void build_nasm(void) {
+	if (!cbs_files_exist(cbs_string_build(external_dir, "/", NASM_PREFIX))) {
+		cbs_run("curl", "--output", NASM_TAR_GZ, NASM_URL);
+		cbs_run("tar", "-xf", NASM_TAR_GZ);
+		cbs_run("rm", "-rf", NASM_TAR_GZ);
+	}
+
+	cbs_log("Building NASM...");
+
+	cbs_cd("./" NASM_PREFIX);
+	if (cbs_run_status("make", "-q", "-t", "--dry-run", "--quiet") == 2)
+		cbs_run("./configure", cbs_string_build("--prefix=", external_dir,
+		                                        "/" NASM_PREFIX));
+	cbs_run("make");
+	cbs_run("make", "install");
+	cbs_cd("..");
+}
+
 void clean(void) {
+	cbs_log("Cleaning submodules...");
 	cbs_run("git", "submodule", "deinit", "-f", ".");
 	cbs_run("git", "submodule", "update", "--init", "--recursive", "--checkout");
+
+	cbs_log("Cleaning NASM...");
+	cbs_run("rm", "-rf", "./" NASM_PREFIX);
 }
 
 int main(int argc, char **argv) {
@@ -152,8 +178,11 @@ int main(int argc, char **argv) {
 
 	const char *arg;
 	while ((arg = cbs_shift_args(&argc, &argv))) {
-		if (cbs_string_eq(arg, "build")) build_qemu();
-		else if (cbs_string_eq(arg, "clean")) clean();
+		if (cbs_string_eq(arg, "build")) {
+			build_qemu();
+			build_nasm();
+		} else if (cbs_string_eq(arg, "clean")) clean();
+		else cbs_error("Invalid subcommand for \"external\"");
 	}
 
 	free(external_dir);
