@@ -143,7 +143,7 @@ static void build_qemu(void) {
 	cbs_cd("..");
 }
 
-void build_nasm(void) {
+static void build_nasm(void) {
 	if (!cbs_files_exist(cbs_string_build(external_dir, "/", NASM_PREFIX))) {
 		cbs_run("curl", "--output", NASM_TAR_GZ, NASM_URL);
 		cbs_run("tar", "-xf", NASM_TAR_GZ);
@@ -161,7 +161,7 @@ void build_nasm(void) {
 	cbs_cd("..");
 }
 
-void clean(void) {
+static void clean(void) {
 	cbs_log("Cleaning submodules...");
 	cbs_run("git", "submodule", "deinit", "-f", ".");
 	cbs_run("git", "submodule", "update", "--init", "--recursive", "--checkout");

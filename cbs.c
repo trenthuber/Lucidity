@@ -1,5 +1,5 @@
 #define CBS_IMPLEMENTATION
-#define CBS_LIBRARY_PATH "./cbs/cbs.h"
+#define CBS_LIBRARY_PATH "./external/cbs.d/cbs.h"
 #include CBS_LIBRARY_PATH
 
 #define CC "cc"
@@ -21,7 +21,7 @@ void clean_lucidity(void) {
 }
 
 void clean_cbs(void) {
-	cbs_run("rm", "-f", "./external/cbs");
+	cbs_run("rm", "-f", "./external/cbs.d/cbs");
 
 	cbs_run("rm", "-f", program);
 }
@@ -55,10 +55,10 @@ int main(int argc, char **argv) {
 				                           "cbs\""));
 			else if (cbs_string_eq(arg, "clean")) clean_cbs();
 			else if (cbs_string_eq(arg, "reinit")) {
-				cbs_cd("./cbs");
+				cbs_cd("./external/cbs.d");
 				cbs_run("git", "stash");
 				cbs_run("git", "pull", "origin", "main");
-				cbs_cd("..");
+				cbs_cd("../..");
 			} else cbs_error(cbs_string_build("Invalid subcommand for \"", program,
 			                                  "cbs\""));
 		else cbs_error(cbs_string_build("Unknown subcommand: ", arg));

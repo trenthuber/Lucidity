@@ -1,5 +1,5 @@
-[submodule "cbs"]
-	path = cbs
+[submodule "external/cbs"]
+	path = external/cbs.d
 	url = https://github.com/trenthuber/cbs.git
 	branch = main
 	update = merge
@@ -31,3 +31,6 @@
 	path = external/qemu
 	url = https://github.com/qemu/qemu.git
 	branch = master
+[submodule "external/cbs.d"]
+	path = external/cbs.d
+	url = https://github.com/trenthuber/cbs.git
