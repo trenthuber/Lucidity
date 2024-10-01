@@ -15,9 +15,9 @@ $ git submodule update --init --recursive # This will take a while
 
 Actually building the project is far more straightforward. The following commands will build and run Lucidity:
 ```console
-$ cc -o have cbs.c
-$ ./have build
-$ ./have lucidity run
+$ cc -o cbs cbs.c
+$ ./cbs build
+$ ./cbs lucidity run
 ```
 
-The first time you build will take a while since it's building QEMU from scratch, but every subseqent time after, you can just run `./have lucidity run` and it will start up.
+The first time you build will take a while since it's building QEMU from scratch, but every subsequent time after, you can just run `./cbs lucidity run` and it will start up.
