@@ -1,5 +1,5 @@
 #define CBS_IMPLEMENTATION
-#define CBS_LIBRARY_PATH "../cbs/cbs.h"
+#define CBS_LIBRARY_PATH "./cbs.d/cbs.h"
 #include CBS_LIBRARY_PATH
 
 #define NUM_MAKE_THREADS "6"
