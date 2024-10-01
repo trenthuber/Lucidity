@@ -1,4 +1,4 @@
-[submodule "external/cbs"]
+[submodule "external/cbs.d"]
 	path = external/cbs.d
 	url = https://github.com/trenthuber/cbs.git
 	branch = main
